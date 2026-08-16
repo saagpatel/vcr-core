@@ -222,17 +222,24 @@ wheels = [
 name = "vcr-core"
 version = "0.1.0"
 source = { editable = "." }
-dependencies = [
+
+[package.optional-dependencies]
+validate = [
     { name = "jsonschema" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "jsonschema" },
     { name = "pytest" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "jsonschema", specifier = ">=4.21" }]
+requires-dist = [{ name = "jsonschema", marker = "extra == 'validate'", specifier = ">=4.21" }]
+provides-extras = ["validate"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=8.0" }]
+dev = [
+    { name = "jsonschema", specifier = ">=4.21" },
+    { name = "pytest", specifier = ">=8.0" },
+]

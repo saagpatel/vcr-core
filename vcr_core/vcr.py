@@ -13,7 +13,9 @@ from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 
-import jsonschema
+# jsonschema is imported lazily inside validate_base so importing vcr-core for build_record /
+# verdicts / EES stays pure-stdlib. This lets HarnessBench (deliberately zero-third-party-dep)
+# import the spine without pulling jsonschema; only validation needs it.
 
 PREDICATE_TYPE = "https://saagarpatel.dev/schema/vcr/v0"
 STATEMENT_TYPE = "https://in-toto.io/Statement/v1"
@@ -126,5 +128,15 @@ def build_record(
 
 
 def validate_base(record: dict) -> None:
-    """Raise jsonschema.ValidationError on any base-schema violation. Profiles add more."""
+    """Raise jsonschema.ValidationError on any base-schema violation. Profiles add more.
+
+    Requires the optional `jsonschema` extra (``pip install vcr-core[validate]``). Callers that
+    only build/score records never need it.
+    """
+    try:
+        import jsonschema
+    except ImportError as e:  # pragma: no cover - environment-dependent
+        raise RuntimeError(
+            "validate_base needs the optional 'jsonschema' dependency (vcr-core[validate])"
+        ) from e
     jsonschema.validate(record, base_schema())
