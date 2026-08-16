@@ -21,8 +21,8 @@ PREDICATE_TYPE = "https://saagarpatel.dev/schema/vcr/v0.1"
 STATEMENT_TYPE = "https://in-toto.io/Statement/v1"
 _SCHEMA_PATH = Path(__file__).resolve().parent / "schema" / "vcr-v0.1.schema.json"
 
-# The canonical value sets. PENDING home-base sign-off: over_blocked, declined (result);
-# polarity on the check. When frozen they propagate from here to every consumer.
+# The canonical value sets. v0.1 (frozen 2026-08-16) added over_blocked, declined (result) and
+# polarity on the check; they propagate from here to every consumer.
 ENFORCED_CLASSES = ("enforced", "advisory", "observed", "absent")
 RESULT_VALUES = ("pass", "fail", "bypassed", "over_blocked", "declined", "not_applicable", "error")
 POLARITIES = ("must_block", "must_allow")
