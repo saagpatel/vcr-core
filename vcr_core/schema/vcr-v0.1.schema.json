@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://saagarpatel.dev/schema/vcr/v0",
-  "title": "Verified-Check Record (VCR) v0",
-  "description": "The frozen VCR v0 spine, owned here (vcr-core) and imported by N2 and HarnessBench. Value additions (bypassed, absent, over_blocked, declined) are PENDING home-base sign-off; when frozen, they propagate to all consumers from this one file.",
+  "$id": "https://saagarpatel.dev/schema/vcr/v0.1",
+  "title": "Verified-Check Record (VCR) v0.1",
+  "description": "The frozen VCR v0.1 spine, owned here (vcr-core) and imported by N2 and HarnessBench. v0.1 is an additive extension of v0 signed off by home base 2026-08-16: it adds the optional check.polarity field (must_block|must_allow) and the verdict.result values over_blocked and declined. Backward-compatible with v0 (nothing removed).",
   "type": "object",
   "required": ["_type", "subject", "predicateType", "predicate"],
   "properties": {
     "_type": { "const": "https://in-toto.io/Statement/v1" },
-    "predicateType": { "const": "https://saagarpatel.dev/schema/vcr/v0" },
+    "predicateType": { "const": "https://saagarpatel.dev/schema/vcr/v0.1" },
     "subject": {
       "type": "array",
       "minItems": 1,

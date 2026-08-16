@@ -17,9 +17,9 @@ from pathlib import Path
 # verdicts / EES stays pure-stdlib. This lets HarnessBench (deliberately zero-third-party-dep)
 # import the spine without pulling jsonschema; only validation needs it.
 
-PREDICATE_TYPE = "https://saagarpatel.dev/schema/vcr/v0"
+PREDICATE_TYPE = "https://saagarpatel.dev/schema/vcr/v0.1"
 STATEMENT_TYPE = "https://in-toto.io/Statement/v1"
-_SCHEMA_PATH = Path(__file__).resolve().parent / "schema" / "vcr-v0.schema.json"
+_SCHEMA_PATH = Path(__file__).resolve().parent / "schema" / "vcr-v0.1.schema.json"
 
 # The canonical value sets. PENDING home-base sign-off: over_blocked, declined (result);
 # polarity on the check. When frozen they propagate from here to every consumer.

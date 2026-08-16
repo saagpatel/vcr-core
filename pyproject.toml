@@ -1,7 +1,7 @@
 [project]
 name = "vcr-core"
 version = "0.1.0"
-description = "The shared spine for the Verified-Check Record (VCR v0) program: schema, verdict vocabulary, record builder, and the EES metric. Imported by The Enforcement Gap (N2) and HarnessBench."
+description = "The shared spine for the Verified-Check Record (VCR v0.1) program: schema, verdict vocabulary, record builder, and the EES metric. Imported by The Enforcement Gap (N2) and HarnessBench."
 readme = "README.md"
 requires-python = ">=3.12"
 # Pure-stdlib core so zero-third-party-dep consumers (HarnessBench) can import the spine.
