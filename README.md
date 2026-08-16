@@ -1,8 +1,8 @@
 # vcr-core
 
 The shared spine for the **Verified-Check Record (VCR v0.1)** program: one home for the schema,
-the verdict vocabulary, the record builder, and the **EES** metric. Imported by
-[The Enforcement Gap (N2)](../enforcement-gap) and [HarnessBench](../harnessbench) so the
+the verdict vocabulary, the record builder, and the **EES** metric. Imported by The Enforcement
+Gap (N2) and [HarnessBench](https://github.com/saagpatel/harnessbench) so the
 program cannot drift on how a check is recorded or scored.
 
 - `vcr_core/schema/vcr-v0.1.schema.json` — the frozen VCR v0.1 JSON Schema (canonical copy).
