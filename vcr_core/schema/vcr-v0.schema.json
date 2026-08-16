@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://saagarpatel.dev/schema/vcr/v0",
+  "title": "Verified-Check Record (VCR) v0",
+  "description": "The frozen VCR v0 spine, owned here (vcr-core) and imported by N2 and HarnessBench. Value additions (bypassed, absent, over_blocked, declined) are PENDING home-base sign-off; when frozen, they propagate to all consumers from this one file.",
+  "type": "object",
+  "required": ["_type", "subject", "predicateType", "predicate"],
+  "properties": {
+    "_type": { "const": "https://in-toto.io/Statement/v1" },
+    "predicateType": { "const": "https://saagarpatel.dev/schema/vcr/v0" },
+    "subject": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["kind", "name", "digest"],
+        "properties": {
+          "kind": { "type": "string", "enum": ["harness_config", "work_product", "artifact"] },
+          "name": { "type": "string" },
+          "mediaType": { "type": "string" },
+          "digest": {
+            "type": "object",
+            "required": ["sha256"],
+            "properties": { "sha256": { "type": "string", "pattern": "^sha256:" } }
+          }
+        }
+      }
+    },
+    "predicate": {
+      "type": "object",
+      "required": ["check", "verdict", "evidence", "runtime", "provenance"],
+      "properties": {
+        "check": {
+          "type": "object",
+          "required": ["id", "category", "version"],
+          "properties": {
+            "id": { "type": "string" },
+            "category": { "type": "string", "enum": ["guard", "policy", "quality", "provenance"] },
+            "version": { "type": "string" },
+            "polarity": { "type": "string", "enum": ["must_block", "must_allow"] },
+            "config_ref": {
+              "type": "object",
+              "required": ["sha256"],
+              "properties": { "sha256": { "type": "string", "pattern": "^sha256:" } }
+            }
+          }
+        },
+        "verdict": {
+          "type": "object",
+          "required": ["result"],
+          "properties": {
+            "result": { "type": "string", "enum": ["pass", "fail", "bypassed", "over_blocked", "declined", "not_applicable", "error"] },
+            "enforced": { "type": "string", "enum": ["enforced", "advisory", "observed", "absent"] },
+            "score": { "type": "number" }
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "required": ["kind", "grade", "digest"],
+          "properties": {
+            "kind": { "type": "string" },
+            "grade": { "type": "string", "enum": ["A", "B", "C"] },
+            "digest": {
+              "type": "object",
+              "required": ["sha256"],
+              "properties": { "sha256": { "type": "string", "pattern": "^sha256:" } }
+            },
+            "uri": { "type": "string" },
+            "inline": { "type": "string" }
+          }
+        },
+        "runtime": {
+          "type": "object",
+          "required": ["ran_at", "runner"],
+          "properties": {
+            "ran_at": { "type": "string" },
+            "runner": { "type": "string" },
+            "duration_ms": { "type": "number" },
+            "env_digest": { "type": "string" }
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "required": ["authority", "trust", "instruction_boundary"],
+          "properties": {
+            "authority": { "type": "string" },
+            "trust": { "type": "string" },
+            "instruction_boundary": { "type": "string", "enum": ["direct", "injected"] }
+          }
+        }
+      }
+    }
+  }
+}
