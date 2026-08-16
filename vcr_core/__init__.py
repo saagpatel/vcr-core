@@ -1,4 +1,4 @@
-"""vcr-core: the shared spine for the Verified-Check Record (VCR v0) program.
+"""vcr-core: the shared spine for the Verified-Check Record (VCR v0.1) program.
 
 One home for the schema, the verdict vocabulary, the record builder, and the EES metric,
 imported by The Enforcement Gap (N2) and HarnessBench so the three-project program cannot

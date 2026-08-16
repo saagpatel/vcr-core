@@ -1,4 +1,4 @@
-"""VCR v0 spine: digests, the verdict vocabulary, the record builder, and base validation.
+"""VCR v0.1 spine: digests, the verdict vocabulary, the record builder, and base validation.
 
 This is the single source of truth for the Verified-Check Record schema and its value sets.
 Consumers (N2, HarnessBench) import from here; they add their own PROFILE constraints on top
@@ -79,7 +79,7 @@ def build_record(
     instruction_boundary: str = "direct",
     evidence_kind: str = "transcript-digest",
 ) -> dict:
-    """Assemble one VCR v0 record. Generic across profiles; call a profile's validate()."""
+    """Assemble one VCR v0.1 record. Generic across profiles; call a profile's validate()."""
     verdict_obj: dict = {"result": verdict.result}
     if verdict.enforced is not None:
         verdict_obj["enforced"] = verdict.enforced
