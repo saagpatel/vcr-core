@@ -15,7 +15,7 @@
         "type": "object",
         "required": ["kind", "name", "digest"],
         "properties": {
-          "kind": { "type": "string", "enum": ["harness_config", "work_product", "artifact"] },
+          "kind": { "type": "string", "enum": ["harness_config", "work_product", "artifact", "skill_bundle", "mcp_server"] },
           "name": { "type": "string" },
           "mediaType": { "type": "string" },
           "digest": {

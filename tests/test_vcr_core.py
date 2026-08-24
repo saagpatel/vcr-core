@@ -40,6 +40,16 @@ def test_schema_delta_values_and_polarity_validate():
     validate_base(_record(verdict=Verdict(result="declined", enforced="advisory")))
 
 
+def test_agent_tooling_subject_kinds_validate():
+    validate_base(_record(subject_kind="skill_bundle"))
+    validate_base(_record(subject_kind="mcp_server"))
+
+
+def test_unknown_subject_kind_rejected():
+    with pytest.raises(jsonschema.ValidationError):
+        validate_base(_record(subject_kind="registry_listing"))
+
+
 def test_unknown_result_rejected():
     rec = _record()
     rec["predicate"]["verdict"]["result"] = "sorta"

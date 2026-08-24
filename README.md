@@ -21,6 +21,11 @@ owner: it adds `over_blocked` and `declined` on `verdict.result`, and the option
 field (`must_block`|`must_allow`) on the check. Nothing was removed, so every v0 record is still
 valid. Sibling projects (N1, N4) may adopt the frozen result.
 
+**Delta signed off 2026-08-24** (additive within v0.1, same predicateType): `subject.kind`
+gains `skill_bundle` and `mcp_server` for the agent-tooling attestation profile (N3). Producers
+on older validator copies simply cannot emit the new kinds until they upgrade; every existing
+record stays valid.
+
 ```bash
 uv sync && uv run pytest
 ```
