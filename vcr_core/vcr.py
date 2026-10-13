@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+from copy import deepcopy
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
+from typing import Any, Literal, cast, get_args
 
 # jsonschema is imported lazily inside validate_base so importing vcr-core for build_record /
 # verdicts / EES stays pure-stdlib. This lets HarnessBench (deliberately zero-third-party-dep)
@@ -23,9 +25,19 @@ _SCHEMA_PATH = Path(__file__).resolve().parent / "schema" / "vcr-v0.1.schema.jso
 
 # The canonical value sets. v0.1 (frozen 2026-08-16) added over_blocked, declined (result) and
 # polarity on the check; they propagate from here to every consumer.
-ENFORCED_CLASSES = ("enforced", "advisory", "observed", "absent")
-RESULT_VALUES = ("pass", "fail", "bypassed", "over_blocked", "declined", "not_applicable", "error")
-POLARITIES = ("must_block", "must_allow")
+ResultValue = Literal[
+    "pass", "fail", "bypassed", "over_blocked", "declined", "not_applicable", "error"
+]
+EnforcedClass = Literal["enforced", "advisory", "observed", "absent"]
+Polarity = Literal["must_block", "must_allow"]
+SubjectKind = Literal["harness_config", "work_product", "artifact", "skill_bundle", "mcp_server"]
+CheckCategory = Literal["guard", "policy", "quality", "provenance"]
+
+ENFORCED_CLASSES = get_args(EnforcedClass)
+RESULT_VALUES = get_args(ResultValue)
+POLARITIES = get_args(Polarity)
+SUBJECT_KINDS = get_args(SubjectKind)
+CHECK_CATEGORIES = get_args(CheckCategory)
 
 
 def sha256_hex(data: bytes) -> str:
@@ -35,12 +47,21 @@ def sha256_hex(data: bytes) -> str:
 
 def sha256_file(path: str | Path) -> str:
     """A VCR digest string for a file's contents."""
-    return sha256_hex(Path(path).read_bytes())
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as file:
+        while chunk := file.read(1024 * 1024):
+            digest.update(chunk)
+    return "sha256:" + digest.hexdigest()
 
 
 @cache
-def base_schema() -> dict:
-    return json.loads(_SCHEMA_PATH.read_text())
+def _cached_schema() -> dict[str, Any]:
+    return cast("dict[str, Any]", json.loads(_SCHEMA_PATH.read_text()))
+
+
+def base_schema() -> dict[str, Any]:
+    """Return a fresh copy of the frozen base schema."""
+    return deepcopy(_cached_schema())
 
 
 @dataclass(frozen=True)
@@ -51,19 +72,19 @@ class Verdict:
     over_block are run-level events, so they live on `result`, never on `enforced`.
     """
 
-    result: str
-    enforced: str | None = None
+    result: ResultValue
+    enforced: EnforcedClass | None = None
     score: float | None = None
 
 
 def build_record(
     *,
-    subject_kind: str,
+    subject_kind: SubjectKind,
     subject_name: str,
     subject_digest: str,
     subject_media_type: str,
     check_id: str,
-    check_category: str,
+    check_category: CheckCategory,
     check_version: str,
     verdict: Verdict,
     evidence_grade: str,
@@ -73,26 +94,26 @@ def build_record(
     env_digest: str | None = None,
     duration_ms: int | None = None,
     config_ref_digest: str | None = None,
-    polarity: str | None = None,
+    polarity: Polarity | None = None,
     authority: str = "operator",
     trust: str = "trusted",
     instruction_boundary: str = "direct",
     evidence_kind: str = "transcript-digest",
-) -> dict:
+) -> dict[str, Any]:
     """Assemble one VCR v0.1 record. Generic across profiles; call a profile's validate()."""
-    verdict_obj: dict = {"result": verdict.result}
+    verdict_obj: dict[str, Any] = {"result": verdict.result}
     if verdict.enforced is not None:
         verdict_obj["enforced"] = verdict.enforced
     if verdict.score is not None:
         verdict_obj["score"] = verdict.score
 
-    check: dict = {"id": check_id, "category": check_category, "version": check_version}
+    check: dict[str, Any] = {"id": check_id, "category": check_category, "version": check_version}
     if config_ref_digest is not None:
         check["config_ref"] = {"sha256": config_ref_digest}
     if polarity is not None:
         check["polarity"] = polarity
 
-    runtime: dict = {"ran_at": ran_at, "runner": runner}
+    runtime: dict[str, Any] = {"ran_at": ran_at, "runner": runner}
     if env_digest is not None:
         runtime["env_digest"] = env_digest
     if duration_ms is not None:
@@ -127,7 +148,7 @@ def build_record(
     }
 
 
-def validate_base(record: dict) -> None:
+def validate_base(record: dict[str, Any]) -> None:
     """Raise jsonschema.ValidationError on any base-schema violation. Profiles add more.
 
     Requires the optional `jsonschema` extra (``pip install vcr-core[validate]``). Callers that
@@ -139,4 +160,4 @@ def validate_base(record: dict) -> None:
         raise RuntimeError(
             "validate_base needs the optional 'jsonschema' dependency (vcr-core[validate])"
         ) from e
-    jsonschema.validate(record, base_schema())
+    jsonschema.validate(record, _cached_schema())
