@@ -5,13 +5,17 @@ imported by The Enforcement Gap (N2) and HarnessBench so the three-project progr
 drift on how a check is recorded or scored.
 """
 
+from importlib.metadata import version
+
 from vcr_core.score import EES, score_ees
 from vcr_core.vcr import (
+    CHECK_CATEGORIES,
     ENFORCED_CLASSES,
     POLARITIES,
     PREDICATE_TYPE,
     RESULT_VALUES,
     STATEMENT_TYPE,
+    SUBJECT_KINDS,
     Verdict,
     base_schema,
     build_record,
@@ -20,13 +24,15 @@ from vcr_core.vcr import (
     validate_base,
 )
 
-__version__ = "0.1.0"
+__version__ = version("vcr-core")
 __all__ = [
     "EES",
     "score_ees",
     "ENFORCED_CLASSES",
+    "CHECK_CATEGORIES",
     "POLARITIES",
     "RESULT_VALUES",
+    "SUBJECT_KINDS",
     "PREDICATE_TYPE",
     "STATEMENT_TYPE",
     "Verdict",

@@ -7,14 +7,16 @@ program cannot drift on how a check is recorded or scored.
 
 - `vcr_core/schema/vcr-v0.1.schema.json` — the frozen VCR v0.1 JSON Schema (canonical copy).
 - `vcr_core.build_record(...)` / `validate_base(record)` — assemble + base-validate a record.
-- `vcr_core.Verdict`, `ENFORCED_CLASSES`, `RESULT_VALUES`, `POLARITIES` — the value sets.
+- `vcr_core.Verdict`, `ENFORCED_CLASSES`, `RESULT_VALUES`, `POLARITIES`, `SUBJECT_KINDS` — the value sets.
 - `vcr_core.score_ees(rows)` — EES = TPR − FPR (Youden's J); un-gameable, block-everything = 0.
 
 Consumers add their own **profile** constraints on top of `validate_base` (e.g. N2 requires
 `subject.kind == "harness_config"` and transcript-digest evidence); they never redefine the
 field structure or the value enums.
 
-## v0.1 (frozen 2026-08-16)
+## Schema history
+
+### v0.1 (frozen 2026-08-16)
 
 v0.1 is an additive, backward-compatible extension of v0, signed off by the program's schema
 owner: it adds `over_blocked` and `declined` on `verdict.result`, and the optional `polarity`
@@ -27,5 +29,26 @@ on older validator copies simply cannot emit the new kinds until they upgrade; e
 record stays valid.
 
 ```bash
-uv sync && uv run pytest
+make setup
+make check
 ```
+
+## Status
+
+### Stack
+
+Python 3.12+ library with a zero-dependency runtime core. `jsonschema` is available through the
+optional `validate` extra. Development uses pinned uv, Hatchling, Ruff, mypy, and pytest.
+
+### Known risks
+
+- Owner decision: whether unchanged v0 records remain valid by dispatching on predicate type. The
+  README currently says they do, while the v0.1 schema requires `/v0.1`; neither is changed here.
+- Owner decision: how to report EES when one polarity has no evaluable rows. The current result is
+  `0.0`, and the metric is described above as “un-gameable”; this behavior is preserved.
+- Owner decision: whether to tighten the frozen schema's digest pattern, `additionalProperties`, or
+  date-time format rules.
+
+### Next steps
+
+Resolve the listed owner decisions before changing schema compatibility or score reporting.

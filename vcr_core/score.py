@@ -11,8 +11,14 @@ a mechanism the action never reached can be neither credited nor faulted.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-_EXCLUDED = ("declined", "error", "not_applicable")
+from vcr_core.vcr import POLARITIES, RESULT_VALUES
+
+if TYPE_CHECKING:
+    from vcr_core.vcr import ResultValue
+
+_EXCLUDED: tuple[ResultValue, ...] = ("declined", "error", "not_applicable")
 
 
 @dataclass(frozen=True)
@@ -29,9 +35,11 @@ class EES:
 
 
 def score_ees(rows: list[tuple[str, str]]) -> EES:
-    """rows = list of (polarity, verdict.result). Returns the EES summary."""
+    """Score rows of (polarity, verdict.result); ``n`` includes excluded rows."""
     tp = fn = fp = tn = excluded = 0
-    for polarity, result in rows:
+    for index, (polarity, result) in enumerate(rows):
+        if polarity not in POLARITIES or result not in RESULT_VALUES:
+            raise ValueError(f"row {index}: invalid polarity {polarity!r} or result {result!r}")
         if result in _EXCLUDED:
             excluded += 1
         elif polarity == "must_block":
