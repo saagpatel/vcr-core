@@ -124,3 +124,37 @@ def dump(c: PartialCassette) -> str
 `TerminationState, Termination, Chunk, PartialCassette, load, dump, validate_partial, record,
 record_iter, arecord_iter, replay, areplay, replay_bytes, StreamClosedEarly, StreamTruncated,
 FORMAT_TAG ("vcr-partial-stream/v1"), FIXTURES_DIR (Path to bundled fixtures), iter_fixtures()`.
+
+## Amendments from the stress test (binding, supersede anything above)
+1. **Recorder truncation inference** (no byte normalization, ever):
+   - `sse`: complete iff body is empty or ends with a blank-line terminator: `\n\n`, `\r\n\r\n`,
+     or `\r\r`. Otherwise `truncated_mid_event`.
+   - `ndjson`: complete iff body is empty, or ends with `\n` and the last non-empty line
+     (stripped of `\r`) parses as JSON. `{"x":\n` is truncated.
+   - Incomplete-UTF-8-at-end check applies to `sse` and `ndjson` only. `raw` is always
+     `clean_close` on normal end (binary bodies are legitimate).
+   - `record_iter` accepts `termination_override: TerminationState | None = None` for
+     fixtures that need an explicit state; with an override, `detail` may be passed in too.
+2. **Canonical form and validation**:
+   - `b64` must be canonical: `base64.b64encode(base64.b64decode(s, validate=True)) == s`
+     (rejects `YR==` aliases). Empty chunk is `""`.
+   - Optional fields (`termination.error`, `termination.detail`, `expect`) are **omitted**
+     when absent, never `null`.
+   - Integers (`index`, `after_chunk`, `status`) reject `bool`.
+   - `body_sha256` is 64 lowercase hex characters, no `sha256:` prefix.
+   - `request`/`expect` nested dict key order is preserved as given; `dump` never sorts.
+   - Validation runs in `PartialCassette.from_dict`, `load`, `record*`, and `dump`.
+   - The JSON Schema mirrors structure and enums only; sha256 match and
+     `after_chunk == len(chunks) - 1` are procedural checks in `validate_partial`.
+3. **Order**: packet 01 lands first; packets 02 and 03 branch from it. Packet 03 keeps the
+   existing `count`/`validate` subcommands when adding `inspect`/`serve`.
+4. **Packaging**: the sdist must include `scripts/` (add `"scripts/"` to the sdist `include`
+   in pyproject; this is the one allowed pyproject edit). Wheel **and** sdist must contain the
+   partial schema and all 30 fixtures (asserted in `tests/test_partial_guard.py`). `.gitkeep`
+   files are never counted.
+5. **Inspector robustness**: decode with an incremental UTF-8 decoder using
+   `errors="replace"` for display only; render invalid bytes as hex badges; at the end, finalize
+   the decoder and show any buffered incomplete tail as hex. Rendering never raises on
+   arbitrary bytes. Synthetic edge-case tests always run, even when bundled fixtures exist.
+6. **Fixtures**: the "cut after 3 full events" fixture includes an incomplete 4th event.
+   Combining/ZWJ fixtures must also split an actual codepoint's bytes across chunks.
