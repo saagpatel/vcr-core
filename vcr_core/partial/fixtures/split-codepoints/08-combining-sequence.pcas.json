@@ -1,0 +1,35 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "split-codepoints/08-combining-sequence",
+  "class": "split_codepoint",
+  "description": "Synthetic UTF-8 split: combining-sequence.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "Zcw="
+    },
+    {
+      "index": 1,
+      "b64": "gQ=="
+    }
+  ],
+  "termination": {
+    "state": "clean_close",
+    "after_chunk": 1
+  },
+  "body_sha256": "bf12767b0f2a56b2190075bae8169f656e3ce8d6357d4aff184bc6c7ea48f9f6",
+  "expect": {
+    "decoded_text": "é",
+    "split_points": [
+      2
+    ]
+  }
+}

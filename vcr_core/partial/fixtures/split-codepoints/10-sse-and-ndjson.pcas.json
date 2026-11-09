@@ -1,0 +1,40 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "split-codepoints/10-sse-and-ndjson",
+  "class": "split_codepoint",
+  "description": "Synthetic UTF-8 split: sse-and-ndjson.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ZGF0YTog5A=="
+    },
+    {
+      "index": 1,
+      "b64": "uK0KeyJ0ZXh0Ijoiww=="
+    },
+    {
+      "index": 2,
+      "b64": "qSJ9Cg=="
+    }
+  ],
+  "termination": {
+    "state": "clean_close",
+    "after_chunk": 2
+  },
+  "body_sha256": "30cfb95ce1db27bd9595e5de5b8d69c1745bff314c6b3ddcb65357f5efcf8d0d",
+  "expect": {
+    "decoded_text": "data: 中\n{\"text\":\"é\"}\n",
+    "split_points": [
+      7,
+      20
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "early-close/10-split-codepoint-completes",
+  "class": "early_close",
+  "description": "Synthetic early close: split-codepoint-completes.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      [
+        "content-type",
+        "text/plain"
+      ]
+    ]
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "b2sg4g=="
+    },
+    {
+      "index": 1,
+      "b64": "gg=="
+    },
+    {
+      "index": 2,
+      "b64": "rA=="
+    }
+  ],
+  "termination": {
+    "state": "early_close",
+    "after_chunk": 2,
+    "error": "TimeoutError"
+  },
+  "body_sha256": "c021ed347cbf54e31076d0ff3512d8aa1dcb9dcb3fd6ee75a85ae0b1fff84869",
+  "expect": {
+    "useful_prefix_b64": "b2sg4oKs",
+    "complete_events": null
+  }
+}

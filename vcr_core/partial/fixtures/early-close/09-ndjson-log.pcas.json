@@ -1,0 +1,39 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "early-close/09-ndjson-log",
+  "class": "early_close",
+  "description": "Synthetic early close: ndjson-log.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      [
+        "content-type",
+        "application/x-ndjson"
+      ]
+    ]
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "eyJsZXZlbCI6ImluZm8ifQo="
+    },
+    {
+      "index": 1,
+      "b64": "eyJsZXZlbCI6Indhcm4ifQo="
+    }
+  ],
+  "termination": {
+    "state": "early_close",
+    "after_chunk": 1,
+    "error": "ConnectionAbortedError"
+  },
+  "body_sha256": "97babc8d14b79f34727af56a0148119e47c6b2d87c031d16245f08fd96fe55d3",
+  "expect": {
+    "useful_prefix_b64": "eyJsZXZlbCI6ImluZm8ifQp7ImxldmVsIjoid2FybiJ9Cg==",
+    "complete_events": 2
+  }
+}

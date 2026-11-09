@@ -1,0 +1,31 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "partial-events/03-sse-after-data",
+  "class": "partial_event",
+  "description": "Synthetic truncated stream: sse-after-data.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ZGF0YTo="
+    }
+  ],
+  "termination": {
+    "state": "truncated_mid_event",
+    "after_chunk": 0,
+    "detail": "SSE payload is absent"
+  },
+  "body_sha256": "ff72caa36dca2baa10a8567e7c303f387789759e377b66904047b5cee6f69c2b",
+  "expect": {
+    "complete_events": 0,
+    "truncated_at_byte": 5,
+    "tail_b64": "ZGF0YTo="
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "partial-events/09-chat-after-three",
+  "class": "partial_event",
+  "description": "Synthetic truncated stream: chat-after-three.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ZGF0YTogeyJ0b2tlbiI6ImEifQoKZGF0YTogeyJ0b2tlbiI6ImIifQoKZGF0YTogeyJ0b2tlbiI6ImMifQoKZGF0YTogeyJ0b2tlbiI6ImQ="
+    }
+  ],
+  "termination": {
+    "state": "truncated_mid_event",
+    "after_chunk": 0,
+    "detail": "fourth token event is incomplete"
+  },
+  "body_sha256": "af1335df80dad31367e07cff2441137865f6944b488cfbff131acea77e50986c",
+  "expect": {
+    "complete_events": 3,
+    "truncated_at_byte": 80,
+    "tail_b64": "ZGF0YTogeyJ0b2tlbiI6ImQ="
+  }
+}

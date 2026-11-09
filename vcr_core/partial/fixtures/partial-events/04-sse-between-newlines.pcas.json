@@ -1,0 +1,31 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "partial-events/04-sse-between-newlines",
+  "class": "partial_event",
+  "description": "Synthetic truncated stream: sse-between-newlines.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ZGF0YTogaGkK"
+    }
+  ],
+  "termination": {
+    "state": "truncated_mid_event",
+    "after_chunk": 0,
+    "detail": "event delimiter is incomplete"
+  },
+  "body_sha256": "8adb13b626e1d32cf1bd7bbda7dc68a8878843d334989778687ff32eadefb002",
+  "expect": {
+    "complete_events": 0,
+    "truncated_at_byte": 9,
+    "tail_b64": "ZGF0YTogaGkK"
+  }
+}

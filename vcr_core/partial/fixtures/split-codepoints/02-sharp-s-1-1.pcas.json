@@ -1,0 +1,35 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "split-codepoints/02-sharp-s-1-1",
+  "class": "split_codepoint",
+  "description": "Synthetic UTF-8 split: sharp-s-1-1.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ww=="
+    },
+    {
+      "index": 1,
+      "b64": "nw=="
+    }
+  ],
+  "termination": {
+    "state": "clean_close",
+    "after_chunk": 1
+  },
+  "body_sha256": "cd3a7e92a9114307055e4a0583acd6549ec3bb6d7c10ecc6ce11ae3d76b3d7db",
+  "expect": {
+    "decoded_text": "ß",
+    "split_points": [
+      1
+    ]
+  }
+}

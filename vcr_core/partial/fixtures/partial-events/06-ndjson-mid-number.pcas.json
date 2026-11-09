@@ -1,0 +1,31 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "partial-events/06-ndjson-mid-number",
+  "class": "partial_event",
+  "description": "Synthetic truncated stream: ndjson-mid-number.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "eyJuIjoxMg=="
+    }
+  ],
+  "termination": {
+    "state": "truncated_mid_event",
+    "after_chunk": 0,
+    "detail": "JSON number is incomplete"
+  },
+  "body_sha256": "a956c5f6bec9b9de794f169da4159d7d4a199f7c7935014534b8d2268fc8b18b",
+  "expect": {
+    "complete_events": 0,
+    "truncated_at_byte": 7,
+    "tail_b64": "eyJuIjoxMg=="
+  }
+}

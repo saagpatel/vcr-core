@@ -1,0 +1,45 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "split-codepoints/06-smile-four-chunks",
+  "class": "split_codepoint",
+  "description": "Synthetic UTF-8 split: smile-four-chunks.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "8A=="
+    },
+    {
+      "index": 1,
+      "b64": "nw=="
+    },
+    {
+      "index": 2,
+      "b64": "mQ=="
+    },
+    {
+      "index": 3,
+      "b64": "gg=="
+    }
+  ],
+  "termination": {
+    "state": "clean_close",
+    "after_chunk": 3
+  },
+  "body_sha256": "d06f1525f791397809f9bc98682b5c13318eca4c3123433467fd4dffda44fd14",
+  "expect": {
+    "decoded_text": "🙂",
+    "split_points": [
+      1,
+      2,
+      3
+    ]
+  }
+}
