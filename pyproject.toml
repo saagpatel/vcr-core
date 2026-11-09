@@ -37,7 +37,7 @@ build-backend = "hatchling.build"
 packages = ["vcr_core"]
 
 [tool.hatch.build.targets.sdist]
-include = ["vcr_core/", "tests/", "README.md", "LICENSE", "pyproject.toml"]
+include = ["vcr_core/", "tests/", "scripts/", "README.md", "LICENSE", "pyproject.toml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -48,6 +48,8 @@ required-version = "==0.13.0"
 [tool.ruff]
 target-version = "py312"
 line-length = 100
+# Handoff specs carry illustrative pseudo-Python in Markdown; they are not source.
+extend-exclude = [".handoff"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "TC", "UP"]
