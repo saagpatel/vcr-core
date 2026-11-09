@@ -41,7 +41,7 @@ class PartialCassette:
             "id": self.id,
             "class": self.cls,
             "description": self.description,
-            "request": {"method": self.request["method"], "url": self.request["url"]},
+            "request": dict(self.request),
             "response": {"status": self.status, "headers": [list(pair) for pair in self.headers]},
             "chunks": [
                 {"index": chunk.index, "b64": base64.b64encode(chunk.data).decode("ascii")}
@@ -129,12 +129,10 @@ class PartialCassette:
         if doc["body_sha256"] != digest:
             raise ValueError("body_sha256 mismatch")
         expect = _mapping(doc["expect"], "expect") if "expect" in doc else None
-        # expect is arbitrary fixture-specific JSON, but must remain serializable.
+        # expect is arbitrary fixture-specific JSON; it must be JSON-native so that
+        # load(dump(c)) == c holds exactly (no key coercion, no tuple-to-list drift).
         if expect is not None:
-            try:
-                json.dumps(expect, allow_nan=False)
-            except (TypeError, ValueError, OverflowError) as exc:
-                raise ValueError("expect must contain JSON values") from exc
+            _check_json(expect, "expect")
         return cls(
             cast("str", doc["id"]),
             kind,
@@ -146,6 +144,28 @@ class PartialCassette:
             termination,
             expect,
         )
+
+
+def _check_json(value: object, path: str) -> None:
+    if value is None or isinstance(value, (bool, str)):
+        return
+    if isinstance(value, int):
+        return
+    if isinstance(value, float):
+        if value != value or value in (float("inf"), float("-inf")):
+            raise ValueError(f"{path} must not contain NaN or infinity")
+        return
+    if isinstance(value, list):
+        for index, item in enumerate(value):
+            _check_json(item, f"{path}[{index}]")
+        return
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise ValueError(f"{path} keys must be strings")
+            _check_json(item, f"{path}.{key}")
+        return
+    raise ValueError(f"{path} must contain only JSON values, got {type(value).__name__}")
 
 
 def validate_partial(doc: object) -> None:
