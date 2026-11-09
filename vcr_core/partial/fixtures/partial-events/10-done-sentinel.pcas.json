@@ -1,0 +1,31 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "partial-events/10-done-sentinel",
+  "class": "partial_event",
+  "description": "Synthetic truncated stream: done-sentinel.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ZGF0YTogW0RP"
+    }
+  ],
+  "termination": {
+    "state": "truncated_mid_event",
+    "after_chunk": 0,
+    "detail": "DONE sentinel is incomplete"
+  },
+  "body_sha256": "add62fb17e379ec991c74f896c38c7850896c579d964ad1fff011f9249b76449",
+  "expect": {
+    "complete_events": 0,
+    "truncated_at_byte": 9,
+    "tail_b64": "ZGF0YTogW0RP"
+  }
+}

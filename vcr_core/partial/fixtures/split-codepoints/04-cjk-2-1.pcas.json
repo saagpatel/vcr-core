@@ -1,0 +1,35 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "split-codepoints/04-cjk-2-1",
+  "class": "split_codepoint",
+  "description": "Synthetic UTF-8 split: cjk-2-1.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "5Lg="
+    },
+    {
+      "index": 1,
+      "b64": "rQ=="
+    }
+  ],
+  "termination": {
+    "state": "clean_close",
+    "after_chunk": 1
+  },
+  "body_sha256": "a567bdaa11367f260f0708391f4d10766b5962f565d9e432f17981a3584fe1e2",
+  "expect": {
+    "decoded_text": "中",
+    "split_points": [
+      2
+    ]
+  }
+}

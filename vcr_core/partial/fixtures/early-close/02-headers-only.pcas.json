@@ -1,0 +1,30 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "early-close/02-headers-only",
+  "class": "early_close",
+  "description": "Synthetic early close: headers-only.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      [
+        "content-type",
+        "application/octet-stream"
+      ]
+    ]
+  },
+  "chunks": [],
+  "termination": {
+    "state": "early_close",
+    "after_chunk": -1,
+    "error": "TimeoutError"
+  },
+  "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "expect": {
+    "useful_prefix_b64": "",
+    "complete_events": null
+  }
+}

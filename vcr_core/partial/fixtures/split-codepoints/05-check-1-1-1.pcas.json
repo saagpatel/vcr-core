@@ -1,0 +1,40 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "split-codepoints/05-check-1-1-1",
+  "class": "split_codepoint",
+  "description": "Synthetic UTF-8 split: check-1-1-1.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "4g=="
+    },
+    {
+      "index": 1,
+      "b64": "nA=="
+    },
+    {
+      "index": 2,
+      "b64": "kw=="
+    }
+  ],
+  "termination": {
+    "state": "clean_close",
+    "after_chunk": 2
+  },
+  "body_sha256": "1dabba21cdad44541f6b15796f8d22978fc7ea10c46aeceeeeb66c23b3ac7604",
+  "expect": {
+    "decoded_text": "✓",
+    "split_points": [
+      1,
+      2
+    ]
+  }
+}

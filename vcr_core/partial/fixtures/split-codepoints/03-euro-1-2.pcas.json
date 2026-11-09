@@ -1,0 +1,35 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "split-codepoints/03-euro-1-2",
+  "class": "split_codepoint",
+  "description": "Synthetic UTF-8 split: euro-1-2.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "4g=="
+    },
+    {
+      "index": 1,
+      "b64": "gqw="
+    }
+  ],
+  "termination": {
+    "state": "clean_close",
+    "after_chunk": 1
+  },
+  "body_sha256": "c4cc90ed3d26f12d4b08a75140970a7904035c31cbb4515a83f19b9003c00d1d",
+  "expect": {
+    "decoded_text": "€",
+    "split_points": [
+      1
+    ]
+  }
+}

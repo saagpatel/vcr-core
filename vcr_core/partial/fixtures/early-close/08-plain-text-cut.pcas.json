@@ -1,0 +1,35 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "early-close/08-plain-text-cut",
+  "class": "early_close",
+  "description": "Synthetic early close: plain-text-cut.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      [
+        "content-type",
+        "text/plain"
+      ]
+    ]
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "U3ludGhldGljIGRvd25sb2FkIGlzIHBhcg=="
+    }
+  ],
+  "termination": {
+    "state": "early_close",
+    "after_chunk": 0,
+    "error": "ConnectionResetError"
+  },
+  "body_sha256": "799620778b15c1cdde1cc861369057975e62c4aef38460e3f19f75d0ba447e3d",
+  "expect": {
+    "useful_prefix_b64": "U3ludGhldGljIGRvd25sb2FkIGlzIHBhcg==",
+    "complete_events": null
+  }
+}
