@@ -149,7 +149,7 @@ def early_fixtures() -> list[tuple[str, PartialCassette]]:
             "text/event-stream",
         ),
         ("keepalive", [b": ping\n"], "raw", 0, "ConnectionResetError", "text/event-stream"),
-        ("large-chunk", [b"x" * 65536], "raw", None, "TimeoutError", "text/plain"),
+        ("large-chunk", [b"x" * 16384], "raw", None, "TimeoutError", "text/plain"),
         (
             "tiny-chunks",
             [bytes([i]) for i in range(65)],

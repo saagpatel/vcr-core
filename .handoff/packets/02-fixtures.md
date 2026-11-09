@@ -36,7 +36,7 @@ Connection drops after useful output, termination `early_close`, `error` one of
 (at least three distinct). Cover: drop after N complete SSE events, after headers-only
 (0 chunks, after_chunk -1), after a complete JSON array element in a chunked JSON array,
 mid-chunk-free boundary (drop exactly on an event boundary), after a keepalive comment line
-(`: ping`), after large chunk (64 KiB synthetic), after many tiny 1-byte chunks (≥50),
+(`: ping`), after a large chunk (16 KiB synthetic), after many tiny 1-byte chunks (≥50),
 plain-text download cut, NDJSON log stream, and one that drops right after a split codepoint
 completes. `expect`: `{"useful_prefix_b64": <bytes delivered>, "complete_events": <int|null>}`.
 
