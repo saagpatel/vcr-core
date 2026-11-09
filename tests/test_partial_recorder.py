@@ -38,7 +38,7 @@ def test_record_iter_keeps_chunk_boundaries_including_empty_chunk() -> None:
     [
         ("sse", [b"data: ready\n"]),
         ("ndjson", [b'{"ok":true}']),
-        ("raw", [b"\xe2\x82"]),
+        ("sse", [b"data: \xe2\x82"]),
     ],
 )
 def test_record_iter_marks_unfinished_framing_or_utf8_as_truncated(

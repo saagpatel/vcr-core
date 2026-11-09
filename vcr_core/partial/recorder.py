@@ -1,11 +1,12 @@
 """Record sync and async byte streams without changing their boundaries."""
 
 import codecs
+import json
 from collections.abc import AsyncIterable, Iterable, Sequence
 from typing import Literal
 
 from .cassette import CassetteClass, Chunk, PartialCassette, validate_partial
-from .termination import Termination, _keys, _mapping
+from .termination import Termination, TerminationState, _keys, _mapping
 
 Framing = Literal["sse", "ndjson", "raw"]
 
@@ -50,19 +51,46 @@ def _check_framing(framing: Framing) -> None:
         raise ValueError("framing must be sse, ndjson, or raw")
 
 
-def _finished(chunks: list[bytes], framing: Framing) -> Termination:
+_SSE_TERMINATORS = (b"\n\n", b"\r\n\r\n", b"\r\r")
+
+
+def _ndjson_complete(body: bytes) -> bool:
+    if not body.endswith(b"\n"):
+        return False
+    lines = [line.rstrip(b"\r") for line in body.split(b"\n")]
+    last = next((line for line in reversed(lines) if line.strip()), None)
+    if last is None:
+        return True
+    try:
+        json.loads(last)
+    except ValueError:
+        return False
+    return True
+
+
+def _finished(
+    chunks: list[bytes],
+    framing: Framing,
+    override: TerminationState | None = None,
+    override_detail: str | None = None,
+) -> Termination:
+    if override is not None:
+        if override == "early_close":
+            raise ValueError("early_close is recorded from a transport error, not an override")
+        return Termination(override, len(chunks) - 1, detail=override_detail)
     body = b"".join(chunks)
     detail: str | None = None
-    # surrogateescape preserves malformed bytes while still buffering an incomplete
-    # trailing UTF-8 sequence. No decoding result is ever used as recorded data.
-    decoder = codecs.getincrementaldecoder("utf-8")("surrogateescape")
-    decoder.decode(body, final=False)
-    if decoder.getstate()[0]:
-        detail = "incomplete UTF-8 sequence at end of body"
-    elif body and framing == "sse" and not body.endswith(b"\n\n"):
-        detail = "incomplete SSE event: body does not end with a blank line"
-    elif body and framing == "ndjson" and not body.endswith(b"\n"):
-        detail = "incomplete NDJSON unit: body does not end with a newline"
+    if body and framing in ("sse", "ndjson"):
+        # surrogateescape keeps malformed bytes but buffers an incomplete trailing UTF-8
+        # sequence. The decoded text is only inspected, never recorded.
+        decoder = codecs.getincrementaldecoder("utf-8")("surrogateescape")
+        decoder.decode(body, final=False)
+        if decoder.getstate()[0]:
+            detail = "incomplete UTF-8 sequence at end of body"
+        elif framing == "sse" and not body.endswith(_SSE_TERMINATORS):
+            detail = "incomplete SSE event: body does not end with a blank line"
+        elif framing == "ndjson" and not _ndjson_complete(body):
+            detail = "incomplete NDJSON unit: last line is not a complete JSON value"
     return Termination(
         "clean_close" if detail is None else "truncated_mid_event",
         len(chunks) - 1,
@@ -81,6 +109,8 @@ def record_iter(
     status: int = 200,
     headers: Sequence[tuple[str, str]] = (),
     expect: dict[str, object] | None = None,
+    termination_override: TerminationState | None = None,
+    detail: str | None = None,
 ) -> PartialCassette:
     _check_framing(framing)
     chunks: list[bytes] = []
@@ -91,7 +121,7 @@ def record_iter(
     except OSError as exc:
         termination = Termination("early_close", len(chunks) - 1, error=type(exc).__name__)
     else:
-        termination = _finished(chunks, framing)
+        termination = _finished(chunks, framing, termination_override, detail)
     return record(
         chunks,
         termination,
@@ -116,6 +146,8 @@ async def arecord_iter(
     status: int = 200,
     headers: Sequence[tuple[str, str]] = (),
     expect: dict[str, object] | None = None,
+    termination_override: TerminationState | None = None,
+    detail: str | None = None,
 ) -> PartialCassette:
     _check_framing(framing)
     chunks: list[bytes] = []
@@ -126,7 +158,7 @@ async def arecord_iter(
     except OSError as exc:
         termination = Termination("early_close", len(chunks) - 1, error=type(exc).__name__)
     else:
-        termination = _finished(chunks, framing)
+        termination = _finished(chunks, framing, termination_override, detail)
     return record(
         chunks,
         termination,

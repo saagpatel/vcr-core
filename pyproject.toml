@@ -37,7 +37,7 @@ build-backend = "hatchling.build"
 packages = ["vcr_core"]
 
 [tool.hatch.build.targets.sdist]
-include = ["vcr_core/", "tests/", "README.md", "LICENSE", "pyproject.toml"]
+include = ["vcr_core/", "tests/", "scripts/", "README.md", "LICENSE", "pyproject.toml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
