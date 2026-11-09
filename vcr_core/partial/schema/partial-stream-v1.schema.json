@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Partial Stream Cassette v1",
+  "description": "Chunk indices, final after_chunk and body_sha256 consistency also require validate_partial.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "id", "class", "description", "request", "response", "chunks", "termination", "body_sha256"],
+  "properties": {
+    "format": {"const": "vcr-partial-stream/v1"},
+    "id": {"type": "string"},
+    "class": {"enum": ["split_codepoint", "partial_event", "early_close"]},
+    "description": {"type": "string"},
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "url"],
+      "properties": {"method": {"type": "string"}, "url": {"type": "string"}}
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "headers"],
+      "properties": {
+        "status": {"type": "integer"},
+        "headers": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "chunks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["index", "b64"],
+        "properties": {
+          "index": {"type": "integer", "minimum": 0},
+          "b64": {
+            "type": "string",
+            "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+            "contentEncoding": "base64"
+          }
+        }
+      }
+    },
+    "termination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "after_chunk"],
+      "properties": {
+        "state": {"enum": ["clean_close", "early_close", "truncated_mid_event"]},
+        "after_chunk": {"type": "integer", "minimum": -1},
+        "error": {"type": "string", "minLength": 1},
+        "detail": {"type": "string"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"state": {"const": "early_close"}}},
+          "then": {"required": ["error"]}
+        },
+        {
+          "if": {"properties": {"state": {"const": "clean_close"}}},
+          "then": {"not": {"required": ["error"]}}
+        }
+      ]
+    },
+    "body_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "expect": {"type": "object"}
+  }
+}
