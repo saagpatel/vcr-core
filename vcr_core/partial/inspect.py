@@ -1,6 +1,5 @@
 """Self-contained HTML inspection for partial-stream cassettes."""
 
-import codecs
 import hashlib
 import html
 import http.server
@@ -217,11 +216,10 @@ def bind_server(directory: Path, port: int) -> socketserver.TCPServer:
 def write_site(cassettes: Sequence[PartialCassette], out_dir: Path) -> Path:
     """Write ``index.html`` and one page per cassette. Return the index path."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    taken: set[str] = set()
     items: list[tuple[str, PartialCassette]] = []
     pages: list[tuple[str, str]] = []
-    for cassette in cassettes:
-        href = _href_for(cassette.id, taken)
+    for position, cassette in enumerate(sorted(cassettes, key=lambda item: item.id), start=1):
+        href = _href_for(cassette.id, position)
         items.append((href, cassette))
         pages.append((href, render_cassette(cassette)))
     root = out_dir.resolve()
@@ -331,7 +329,7 @@ def _chunk_html(view: "_ChunkView") -> str:
     if view.carries:
         unit = "byte" if view.carries == 1 else "bytes"
         badges.append(f'<span class="badge carry">↪ carries {view.carries} {unit}</span>')
-    text = '<p class="empty">(empty chunk)</p>' if view.empty else view.text_html
+    text = '<p class="empty">(empty chunk)</p>' if view.empty else _tokens_html(view.tokens)
     length = "1 byte" if view.length == 1 else f"{view.length} bytes"
     return (
         f'<article class="chunk" data-chunk-index="{view.index}" data-hex="{view.continuous_hex}">'
@@ -359,7 +357,7 @@ class _ChunkView:
     end: int
     grouped_hex: str
     continuous_hex: str
-    text_html: str
+    tokens: list["_Text | _Hex"]
     carries: int
     completes_split: bool
     empty: bool
@@ -376,22 +374,17 @@ class _Hex:
 
 
 def _chunk_views(chunks: Sequence[Chunk]) -> tuple[list[_ChunkView], bytes]:
-    decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+    carry = b""
     views: list[_ChunkView] = []
     offset = 0
     for chunk in chunks:
-        carried_in = _buffered(decoder)
-        decoder.decode(chunk.data)
-        carried_out = _buffered(decoder)
-        combined = carried_in + chunk.data
-        if carried_out and combined.endswith(carried_out):
-            resolved = combined[: len(combined) - len(carried_out)]
-        elif not carried_out:
-            resolved = combined
-        else:
-            resolved = b""
-        completes = _completes_split(carried_in, resolved)
-        tokens = _display_tokens(resolved)
+        tokens, carry_out = _scan(carry + chunk.data)
+        completes = (
+            bool(carry)
+            and bool(tokens)
+            and isinstance(tokens[0], _Text)
+            and tokens[0].value.encode("utf-8").startswith(carry)
+        )
         views.append(
             _ChunkView(
                 chunk.index,
@@ -400,88 +393,64 @@ def _chunk_views(chunks: Sequence[Chunk]) -> tuple[list[_ChunkView], bytes]:
                 offset + len(chunk.data),
                 _grouped_hex(chunk.data),
                 chunk.data.hex(),
-                _tokens_html(tokens),
-                len(carried_out) if chunk.data and carried_out else 0,
+                tokens,
+                len(carry_out) if chunk.data and carry_out else 0,
                 completes,
                 not chunk.data,
             )
         )
+        carry = carry_out
         offset += len(chunk.data)
-    tail = _buffered(decoder)
-    decoder.decode(b"", final=True)
-    return views, tail
+    return views, carry
 
 
-def _completes_split(carried_in: bytes, resolved: bytes) -> bool:
-    if not carried_in or not resolved.startswith(carried_in):
-        return False
-    if not resolved[len(carried_in) :]:
-        return False
-    tokens = _display_tokens(resolved)
-    return bool(tokens) and isinstance(tokens[0], _Text)
-
-
-def _display_tokens(data: bytes) -> list[_Text | _Hex]:
-    if not data:
-        return []
-    try:
-        return [_Text(data.decode("utf-8"))]
-    except UnicodeDecodeError:
-        pass
-    decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+def _scan(data: bytes) -> tuple[list[_Text | _Hex], bytes]:
+    """Tokenize complete UTF-8 and invalid bytes, retaining only a valid prefix tail."""
     tokens: list[_Text | _Hex] = []
-    pending = bytearray()
-    for byte in data:
-        pending.append(byte)
-        produced = decoder.decode(bytes([byte]))
-        if produced == "":
-            continue
-        tokens.extend(_piece_tokens(bytes(pending), produced))
-        pending.clear()
-    leftover = bytes(pending) + _buffered(decoder)
-    decoder.decode(b"", final=True)
-    tokens.extend(_Hex(bytes([byte])) for byte in leftover)
-    return tokens
-
-
-def _piece_tokens(piece: bytes, produced: str) -> list[_Text | _Hex]:
-    try:
-        if piece.decode("utf-8") == produced:
-            return [_Text(produced)]
-    except UnicodeDecodeError:
-        pass
-    tokens: list[_Text | _Hex] = []
-    raw = piece
-    text = produced
-    while text and raw:
-        if text[0] != "\ufffd":
-            run: list[str] = []
-            while text and text[0] != "\ufffd":
-                run.append(text[0])
-                text = text[1:]
-            encoded = "".join(run).encode("utf-8")
-            if not raw.startswith(encoded):
-                break
-            tokens.append(_Text("".join(run)))
-            raw = raw[len(encoded) :]
-            continue
-        while text and text[0] == "\ufffd":
-            text = text[1:]
-        if not text:
-            break
-        run = []
-        probe = text
-        while probe and probe[0] != "\ufffd":
-            run.append(probe[0])
-            probe = probe[1:]
-        encoded = "".join(run).encode("utf-8")
-        index = raw.find(encoded)
-        if index < 0:
-            break
-        tokens.extend(_Hex(bytes([byte])) for byte in raw[:index])
-        raw = raw[index:]
-    tokens.extend(_Hex(bytes([byte])) for byte in raw)
-    return tokens
+    text: list[str] = []
+    index = 0
+    while index < len(data):
+        lead = data[index]
+        length = 0
+        if lead < 0x80:
+            length = 1
+        elif 0xC2 <= lead <= 0xDF:
+            length = 2
+        elif 0xE0 <= lead <= 0xEF:
+            length = 3
+        elif 0xF0 <= lead <= 0xF4:
+            length = 4
+        if length:
+            piece = data[index : index + length]
+            if len(piece) < length:
+                low, high = {
+                    0xE0: (0xA0, 0xBF),
+                    0xED: (0x80, 0x9F),
+                    0xF0: (0x90, 0xBF),
+                    0xF4: (0x80, 0x8F),
+                }.get(lead, (0x80, 0xBF))
+                if all(
+                    (low <= byte <= high) if offset == 1 else (0x80 <= byte <= 0xBF)
+                    for offset, byte in enumerate(piece[1:], start=1)
+                ):
+                    break
+            else:
+                try:
+                    decoded = piece.decode("utf-8")
+                except UnicodeDecodeError:
+                    pass
+                else:
+                    text.append(decoded)
+                    index += length
+                    continue
+        if text:
+            tokens.append(_Text("".join(text)))
+            text.clear()
+        tokens.append(_Hex(data[index : index + 1]))
+        index += 1
+    if text:
+        tokens.append(_Text("".join(text)))
+    return tokens, data[index:]
 
 
 def _tokens_html(tokens: Sequence[_Text | _Hex]) -> str:
@@ -515,15 +484,6 @@ def _grouped_hex(data: bytes) -> str:
     return "  ".join(groups)
 
 
-def _buffered(decoder: codecs.IncrementalDecoder) -> bytes:
-    raw = decoder.getstate()[0]
-    if isinstance(raw, bytes):
-        return raw
-    if isinstance(raw, bytearray):
-        return bytes(raw)
-    return b""
-
-
 def _or_dash(value: str | None) -> str:
     return value if value else "—"
 
@@ -532,21 +492,9 @@ def _esc(value: object) -> str:
     return html.escape(str(value), quote=True)
 
 
-def _href_for(cassette_id: str, taken: set[str]) -> str:
-    parts: list[str] = []
-    for segment in cassette_id.split("/"):
-        cleaned = re.sub(r"[^A-Za-z0-9._-]+", "-", segment).strip(".-")
-        parts.append(cleaned or "cassette")
-    href = "/".join(parts or ["cassette"]) + ".html"
-    if href == "index.html":
-        href = "cassette.html"
-    candidate = href
-    suffix = 2
-    while candidate in taken:
-        candidate = f"{href.removesuffix('.html')}-{suffix}.html"
-        suffix += 1
-    taken.add(candidate)
-    return candidate
+def _href_for(cassette_id: str, position: int) -> str:
+    slug = re.sub(r"[^A-Za-z0-9._-]+", "-", cassette_id).strip(".-")[:80] or "cassette"
+    return f"pages/{position:03d}-{slug}.html"
 
 
 def _within(out_dir: Path, root: Path, href: str) -> Path:

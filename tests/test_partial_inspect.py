@@ -2,6 +2,7 @@
 
 import hashlib
 import html
+import random
 import re
 import selectors
 import subprocess
@@ -17,7 +18,15 @@ import pytest
 
 from vcr_core.partial import Termination, dump, iter_fixtures, record
 from vcr_core.partial.cassette import PartialCassette
-from vcr_core.partial.inspect import render_cassette, render_index, write_site
+from vcr_core.partial.inspect import (
+    _chunk_views,
+    _Hex,
+    _scan,
+    _Text,
+    render_cassette,
+    render_index,
+    write_site,
+)
 
 Kind = Literal["split_codepoint", "partial_event", "early_close"]
 _EMOJI = "😀"
@@ -105,12 +114,136 @@ def _pages() -> list[PartialCassette]:
 
 
 def _chunk_rows(page: str) -> list[tuple[int, str]]:
-    marks = list(re.finditer(r'data-chunk-index="(\d+)"', page))
-    rows: list[tuple[int, str]] = []
-    for index, mark in enumerate(marks):
-        end = marks[index + 1].start() if index + 1 < len(marks) else len(page)
-        rows.append((int(mark.group(1)), page[mark.start() : end]))
-    return rows
+    return [
+        (int(mark.group(1)), mark.group(0))
+        for mark in re.finditer(
+            r'<article class="chunk" data-chunk-index="(\d+)"[^>]*>.*?</article>',
+            page,
+            re.DOTALL,
+        )
+    ]
+
+
+@pytest.mark.parametrize(
+    ("data", "tokens", "tail"),
+    [
+        (b"\xc3\xe2\x82\xac", [_Hex(b"\xc3"), _Text("€")], b""),
+        (b"\xc3\xe2\x82", [_Hex(b"\xc3")], b"\xe2\x82"),
+        (b"\xed\xa0\x80", [_Hex(b"\xed"), _Hex(b"\xa0"), _Hex(b"\x80")], b""),
+        (
+            b"\xf4\x90\x80\x80",
+            [_Hex(b"\xf4"), _Hex(b"\x90"), _Hex(b"\x80"), _Hex(b"\x80")],
+            b"",
+        ),
+        (b"\xc0\xaf", [_Hex(b"\xc0"), _Hex(b"\xaf")], b""),
+        (b"a\xe2", [_Text("a")], b"\xe2"),
+        (b"\xe2\x82", [], b"\xe2\x82"),
+        (b"\xe2\x82\xacb", [_Text("€b")], b""),
+        (b"\xe0\xa0", [], b"\xe0\xa0"),
+        (b"\xed\x9f", [], b"\xed\x9f"),
+        (b"\xf0\x90\x80", [], b"\xf0\x90\x80"),
+        (b"\xf4\x8f\xbf", [], b"\xf4\x8f\xbf"),
+        (b"\xe0\x80", [_Hex(b"\xe0"), _Hex(b"\x80")], b""),
+        (b"\xed\xa0", [_Hex(b"\xed"), _Hex(b"\xa0")], b""),
+        (b"\xf0\x80", [_Hex(b"\xf0"), _Hex(b"\x80")], b""),
+        (b"\xf4\x90", [_Hex(b"\xf4"), _Hex(b"\x90")], b""),
+    ],
+)
+def test_scan_and_render_malformed_or_incomplete_utf8(
+    data: bytes, tokens: list[_Text | _Hex], tail: bytes
+) -> None:
+    assert _scan(data) == (tokens, tail)
+    cassette = _make(
+        [data], Termination("clean_close", 0), "synthetic/scanner", "partial_event", "scanner"
+    )
+    page = render_cassette(cassette)
+    row = dict(_chunk_rows(page))[0]
+    expected = "".join(
+        f'<span class="run">{html.escape(token.value)}</span>'
+        if isinstance(token, _Text)
+        else f'<span class="hex-badge">{token.value.hex()}</span>'
+        for token in tokens
+    )
+    assert f'<div class="text">{expected}</div>' in row
+    if tail:
+        assert f'data-tail-hex="{tail.hex()}"' in page
+        terminal = page.split('<article class="terminal ', 1)[1]
+        assert re.findall(r'<span class="hex-badge">(.*?)</span>', terminal) == [
+            f"{byte:02x}" for byte in tail
+        ]
+        assert "data-tail-hex" not in row
+    else:
+        assert "data-tail-hex" not in page
+    if data == b"\xc3\xe2\x82":
+        assert page.count('<span class="hex-badge">c3</span>') == 1
+        assert "↪ carries 2 bytes" in row
+
+
+def test_three_chunks_carry_and_complete_one_codepoint() -> None:
+    cassette = _make(
+        [b"a\xe2", b"\x82", b"\xacb"],
+        Termination("clean_close", 2),
+        "synthetic/three-chunks",
+        "split_codepoint",
+        "one codepoint across three chunks",
+    )
+    views, tail = _chunk_views(cassette.chunks)
+    assert [view.tokens for view in views] == [[_Text("a")], [], [_Text("€b")]]
+    assert [view.carries for view in views] == [1, 2, 0]
+    assert [view.completes_split for view in views] == [False, False, True]
+    assert tail == b""
+    rows = dict(_chunk_rows(render_cassette(cassette)))
+    assert '<div class="text"><span class="run">a</span></div>' in rows[0]
+    assert "↪ carries 1 byte" in rows[0]
+    assert '<div class="text"></div>' in rows[1]
+    assert "↪ carries 2 bytes" in rows[1]
+    assert '<div class="text"><span class="run">€b</span></div>' in rows[2]
+    assert "completes split codepoint" in rows[2]
+
+
+def _token_bytes(tokens: Sequence[_Text | _Hex]) -> bytes:
+    return b"".join(
+        token.value.encode("utf-8") if isinstance(token, _Text) else token.value for token in tokens
+    )
+
+
+def test_text_view_conserves_every_byte_in_fixtures_and_seeded_streams() -> None:
+    cassettes = list(iter_fixtures())
+    assert len(cassettes) == 30
+    rng = random.Random(1234)
+    for index in range(200):
+        body = rng.randbytes(rng.randrange(41))
+        chunks = [b""]
+        offset = 0
+        while offset < len(body):
+            end = min(len(body), offset + rng.randint(1, 8))
+            chunks.append(body[offset:end])
+            if rng.choice((False, True)):
+                chunks.append(b"")
+            offset = end
+        chunks.append(b"")
+        cassettes.append(
+            _make(
+                chunks,
+                Termination("clean_close", len(chunks) - 1),
+                f"synthetic/random-{index}",
+                "partial_event",
+                "seeded random byte stream",
+            )
+        )
+    for cassette in cassettes:
+        views, tail = _chunk_views(cassette.chunks)
+        assert b"".join(_token_bytes(view.tokens) for view in views) + tail == cassette.body(), (
+            cassette.id
+        )
+        tokens, scanned_tail = _scan(cassette.body())
+        assert _token_bytes(tokens) + scanned_tail == cassette.body(), cassette.id
+        assert len(views) == len(cassette.chunks)
+        for view in views:
+            if view.empty:
+                assert view.tokens == []
+                assert view.carries == 0
+                assert not view.completes_split
 
 
 @pytest.mark.parametrize("cassette", _pages(), ids=lambda cassette: cassette.id)
@@ -241,6 +374,53 @@ def test_index_links_every_written_page(tmp_path: Path) -> None:
     assert "<script>" not in index
     rendered = render_index([("nested/one.html", duplicated[0])])
     assert 'href="nested/one.html"' in rendered
+
+
+@pytest.mark.parametrize(
+    "ids",
+    [
+        ["foo", "foo.html/bar"],
+        ["foo.html/bar", "foo"],
+        ["index.html/child"],
+        ["a/b", "a-b"],
+        ["a-b", "a/b"],
+        ["../..", "a" * 81, "a" * 82],
+    ],
+)
+def test_site_uses_unique_flat_page_names(ids: list[str], tmp_path: Path) -> None:
+    cassettes = [
+        _make([b"x"], Termination("clean_close", 0), id, "partial_event", "path collisions")
+        for id in ids
+    ]
+    index_path = write_site(cassettes, tmp_path)
+    assert index_path == tmp_path / "index.html"
+    assert index_path.is_file()
+    index = index_path.read_text(encoding="utf-8")
+    hrefs = re.findall(r'href="([^"]+)"', index)
+    assert len(hrefs) == len(set(hrefs)) == len(ids)
+    expected_hrefs = []
+    for position, cassette in enumerate(sorted(cassettes, key=lambda item: item.id), start=1):
+        slug = re.sub(r"[^A-Za-z0-9._-]+", "-", cassette.id).strip(".-")[:80] or "cassette"
+        href = f"pages/{position:03d}-{slug}.html"
+        expected_hrefs.append(href)
+        assert index.count(f'href="{href}"') == 1
+        target = tmp_path / href
+        assert target.is_file()
+        assert target.parent == tmp_path / "pages"
+        assert f"<h1>{html.escape(cassette.id)}</h1>" in target.read_text(encoding="utf-8")
+    assert hrefs == expected_hrefs
+    _assert_site(tmp_path)
+
+
+def test_page_output_stays_within_root_when_pages_is_a_symlink(tmp_path: Path) -> None:
+    out = tmp_path / "site"
+    outside = tmp_path / "outside"
+    out.mkdir()
+    outside.mkdir()
+    (out / "pages").symlink_to(outside, target_is_directory=True)
+    with pytest.raises(ValueError, match="refusing to write outside"):
+        write_site(_synthetic()[:1], out)
+    assert list(outside.iterdir()) == []
 
 
 def test_inspect_bundled_and_paths(tmp_path: Path) -> None:
