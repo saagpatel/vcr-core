@@ -1,0 +1,39 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "early-close/03-json-array-element",
+  "class": "early_close",
+  "description": "Synthetic early close: json-array-element.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      [
+        "content-type",
+        "application/json"
+      ]
+    ]
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "WzEs"
+    },
+    {
+      "index": 1,
+      "b64": "Miw="
+    }
+  ],
+  "termination": {
+    "state": "early_close",
+    "after_chunk": 1,
+    "error": "BrokenPipeError"
+  },
+  "body_sha256": "1e8cd39c1fe950a0b28b79ae0c40ad87b81c098490d85ef0b82a5bf4a4a4ca28",
+  "expect": {
+    "useful_prefix_b64": "WzEsMiw=",
+    "complete_events": null
+  }
+}

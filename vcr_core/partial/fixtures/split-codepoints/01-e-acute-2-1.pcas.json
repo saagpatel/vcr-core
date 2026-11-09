@@ -1,0 +1,39 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "split-codepoints/01-e-acute-2-1",
+  "class": "split_codepoint",
+  "description": "Synthetic UTF-8 split: e-acute-2-1.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "Y2Fmww=="
+    },
+    {
+      "index": 1,
+      "b64": "qQ=="
+    },
+    {
+      "index": 2,
+      "b64": ""
+    }
+  ],
+  "termination": {
+    "state": "clean_close",
+    "after_chunk": 2
+  },
+  "body_sha256": "850f7dc43910ff890f8879c0ed26fe697c93a067ad93a7d50f466a7028a9bf4e",
+  "expect": {
+    "decoded_text": "café",
+    "split_points": [
+      4
+    ]
+  }
+}

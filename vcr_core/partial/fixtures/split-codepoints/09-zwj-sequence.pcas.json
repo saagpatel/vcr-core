@@ -1,0 +1,45 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "split-codepoints/09-zwj-sequence",
+  "class": "split_codepoint",
+  "description": "Synthetic UTF-8 split: zwj-sequence.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "8J+RqeI="
+    },
+    {
+      "index": 1,
+      "b64": "gA=="
+    },
+    {
+      "index": 2,
+      "b64": "jfCf"
+    },
+    {
+      "index": 3,
+      "b64": "krs="
+    }
+  ],
+  "termination": {
+    "state": "clean_close",
+    "after_chunk": 3
+  },
+  "body_sha256": "427274538f1f24ef137872891551ffb4263f6edd90c80c533534578e8a5a9893",
+  "expect": {
+    "decoded_text": "👩‍💻",
+    "split_points": [
+      5,
+      6,
+      9
+    ]
+  }
+}

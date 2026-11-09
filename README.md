@@ -52,3 +52,30 @@ optional `validate` extra. Development uses pinned uv, Hatchling, Ruff, mypy, an
 ### Next steps
 
 Resolve the listed owner decisions before changing schema compatibility or score reporting.
+
+## Partial Stream Studio (opt-in)
+
+`vcr_core.partial` records and replays HTTP-style response bodies that arrive in fragments
+and may stop midway, byte for byte. It is a separate, opt-in format (`vcr-partial-stream/v1`,
+`*.pcas.json`) beside the VCR v0.1 record. `import vcr_core` never loads it, and nothing in
+the frozen v0.1 schema or API changed.
+
+- A cassette holds ordered byte chunks (canonical base64) plus one termination state:
+  `clean_close`, `early_close` (transport dropped after useful output), or
+  `truncated_mid_event` (an SSE event, JSON value or UTF-8 sequence cut off).
+- `record` / `record_iter` / `arecord_iter` capture chunk boundaries exactly. Truncation
+  detection is framing-aware (`sse`, `ndjson`, `raw`), and an `OSError` from the source is
+  recorded as `early_close`.
+- `replay` / `areplay` yield the recorded bytes in recorded order, then end the way the stream
+  ended: normally, `StreamClosedEarly` (a `ConnectionError`), or `StreamTruncated` (an
+  `EOFError`). Nothing is decoded or re-chunked.
+- 30 original synthetic fixtures ship with the package, 10 each for split codepoints, partial
+  events and early close (`vcr_core.partial.iter_fixtures()`). They are regenerated
+  deterministically by `scripts/build_partial_fixtures.py` (`--check` verifies them).
+
+```bash
+uv run python -m vcr_core.partial count                 # 10 / 10 / 10, total 30
+uv run python -m vcr_core.partial validate path/to/cassettes
+uv run python -m vcr_core.partial inspect --bundled     # chunk-by-chunk HTML view
+uv run python -m vcr_core.partial serve --bundled       # same view on 127.0.0.1
+```

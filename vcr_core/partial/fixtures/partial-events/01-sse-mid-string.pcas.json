@@ -1,0 +1,31 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "partial-events/01-sse-mid-string",
+  "class": "partial_event",
+  "description": "Synthetic truncated stream: sse-mid-string.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ZGF0YTogeyJ0ZXh0IjoiaGVs"
+    }
+  ],
+  "termination": {
+    "state": "truncated_mid_event",
+    "after_chunk": 0,
+    "detail": "data: {\"text\":..."
+  },
+  "body_sha256": "3a0616306c8ac670a3aef8ffe6fc012d7270528ed3b0aea4abfdeb5f9fdd12fa",
+  "expect": {
+    "complete_events": 0,
+    "truncated_at_byte": 18,
+    "tail_b64": "ZGF0YTogeyJ0ZXh0IjoiaGVs"
+  }
+}

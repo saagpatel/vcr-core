@@ -1,0 +1,31 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "partial-events/08-ndjson-mid-multibyte",
+  "class": "partial_event",
+  "description": "Synthetic truncated stream: ndjson-mid-multibyte.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "eyJzIjoi5A=="
+    }
+  ],
+  "termination": {
+    "state": "truncated_mid_event",
+    "after_chunk": 0,
+    "detail": "UTF-8 codepoint is incomplete"
+  },
+  "body_sha256": "ebd7b5620bf2df1f7de41f30a4777a95492a88c7818fcc6ecd51f46e64793232",
+  "expect": {
+    "complete_events": 0,
+    "truncated_at_byte": 7,
+    "tail_b64": "eyJzIjoi5A=="
+  }
+}

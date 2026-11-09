@@ -1,0 +1,35 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "early-close/05-keepalive",
+  "class": "early_close",
+  "description": "Synthetic early close: keepalive.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      [
+        "content-type",
+        "text/event-stream"
+      ]
+    ]
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "OiBwaW5nCg=="
+    }
+  ],
+  "termination": {
+    "state": "early_close",
+    "after_chunk": 0,
+    "error": "ConnectionResetError"
+  },
+  "body_sha256": "0752afc1429826ad505518f09f23765e4598fe1bf1e073d28e779ab6ee20ee40",
+  "expect": {
+    "useful_prefix_b64": "OiBwaW5nCg==",
+    "complete_events": 0
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "partial-events/07-ndjson-mid-escape",
+  "class": "partial_event",
+  "description": "Synthetic truncated stream: ndjson-mid-escape.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "eyJzIjoiXHUwMA=="
+    }
+  ],
+  "termination": {
+    "state": "truncated_mid_event",
+    "after_chunk": 0,
+    "detail": "JSON escape is incomplete"
+  },
+  "body_sha256": "bc652d896626f72a76a89a2cbc3646e0251433efcd7350a869110a5c4b2b4508",
+  "expect": {
+    "complete_events": 0,
+    "truncated_at_byte": 10,
+    "tail_b64": "eyJzIjoiXHUwMA=="
+  }
+}

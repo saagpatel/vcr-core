@@ -1,0 +1,35 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "early-close/01-two-sse-events",
+  "class": "early_close",
+  "description": "Synthetic early close: two-sse-events.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      [
+        "content-type",
+        "text/event-stream"
+      ]
+    ]
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ZGF0YTogb25lCgpkYXRhOiB0d28KCg=="
+    }
+  ],
+  "termination": {
+    "state": "early_close",
+    "after_chunk": 0,
+    "error": "ConnectionResetError"
+  },
+  "body_sha256": "cbf9f64931c33e4aeac8f405a512943a7c94ff95279958a188dae1816cd2b9f8",
+  "expect": {
+    "useful_prefix_b64": "ZGF0YTogb25lCgpkYXRhOiB0d28KCg==",
+    "complete_events": 2
+  }
+}

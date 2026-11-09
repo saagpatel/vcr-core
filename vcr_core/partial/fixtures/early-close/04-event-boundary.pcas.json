@@ -1,0 +1,35 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "early-close/04-event-boundary",
+  "class": "early_close",
+  "description": "Synthetic early close: event-boundary.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      [
+        "content-type",
+        "text/event-stream"
+      ]
+    ]
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ZGF0YTogcmVhZHkKCg=="
+    }
+  ],
+  "termination": {
+    "state": "early_close",
+    "after_chunk": 0,
+    "error": "ConnectionAbortedError"
+  },
+  "body_sha256": "d89d38f39f6623a0e8106bc19132a7dd014c191f0542c78e4e2c665963d47d9d",
+  "expect": {
+    "useful_prefix_b64": "ZGF0YTogcmVhZHkKCg==",
+    "complete_events": 1
+  }
+}

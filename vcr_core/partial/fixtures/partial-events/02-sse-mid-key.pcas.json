@@ -1,0 +1,31 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "partial-events/02-sse-mid-key",
+  "class": "partial_event",
+  "description": "Synthetic truncated stream: sse-mid-key.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ZGF0YTogeyJ0b2s="
+    }
+  ],
+  "termination": {
+    "state": "truncated_mid_event",
+    "after_chunk": 0,
+    "detail": "SSE JSON key is incomplete"
+  },
+  "body_sha256": "b1a1368bf83077a6a6f1191ca401d2adcd41f5c8149c44bb86a29bf2625aa137",
+  "expect": {
+    "complete_events": 0,
+    "truncated_at_byte": 11,
+    "tail_b64": "ZGF0YTogeyJ0b2s="
+  }
+}

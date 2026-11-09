@@ -1,0 +1,31 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "partial-events/05-sse-multiline-line-two",
+  "class": "partial_event",
+  "description": "Synthetic truncated stream: sse-multiline-line-two.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": []
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "ZGF0YTogZmlyc3QKZGF0YTogc2Vj"
+    }
+  ],
+  "termination": {
+    "state": "truncated_mid_event",
+    "after_chunk": 0,
+    "detail": "second data line is incomplete"
+  },
+  "body_sha256": "82d75d7e49aa38b0e5de10f257bfc18dc9c66aef6f7f749e08398535874054cf",
+  "expect": {
+    "complete_events": 0,
+    "truncated_at_byte": 21,
+    "tail_b64": "ZGF0YTogZmlyc3QKZGF0YTogc2Vj"
+  }
+}

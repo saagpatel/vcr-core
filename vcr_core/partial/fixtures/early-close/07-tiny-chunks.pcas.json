@@ -1,0 +1,291 @@
+{
+  "format": "vcr-partial-stream/v1",
+  "id": "early-close/07-tiny-chunks",
+  "class": "early_close",
+  "description": "Synthetic early close: tiny-chunks.",
+  "request": {
+    "method": "GET",
+    "url": "https://example.test/stream"
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      [
+        "content-type",
+        "application/octet-stream"
+      ]
+    ]
+  },
+  "chunks": [
+    {
+      "index": 0,
+      "b64": "AA=="
+    },
+    {
+      "index": 1,
+      "b64": "AQ=="
+    },
+    {
+      "index": 2,
+      "b64": "Ag=="
+    },
+    {
+      "index": 3,
+      "b64": "Aw=="
+    },
+    {
+      "index": 4,
+      "b64": "BA=="
+    },
+    {
+      "index": 5,
+      "b64": "BQ=="
+    },
+    {
+      "index": 6,
+      "b64": "Bg=="
+    },
+    {
+      "index": 7,
+      "b64": "Bw=="
+    },
+    {
+      "index": 8,
+      "b64": "CA=="
+    },
+    {
+      "index": 9,
+      "b64": "CQ=="
+    },
+    {
+      "index": 10,
+      "b64": "Cg=="
+    },
+    {
+      "index": 11,
+      "b64": "Cw=="
+    },
+    {
+      "index": 12,
+      "b64": "DA=="
+    },
+    {
+      "index": 13,
+      "b64": "DQ=="
+    },
+    {
+      "index": 14,
+      "b64": "Dg=="
+    },
+    {
+      "index": 15,
+      "b64": "Dw=="
+    },
+    {
+      "index": 16,
+      "b64": "EA=="
+    },
+    {
+      "index": 17,
+      "b64": "EQ=="
+    },
+    {
+      "index": 18,
+      "b64": "Eg=="
+    },
+    {
+      "index": 19,
+      "b64": "Ew=="
+    },
+    {
+      "index": 20,
+      "b64": "FA=="
+    },
+    {
+      "index": 21,
+      "b64": "FQ=="
+    },
+    {
+      "index": 22,
+      "b64": "Fg=="
+    },
+    {
+      "index": 23,
+      "b64": "Fw=="
+    },
+    {
+      "index": 24,
+      "b64": "GA=="
+    },
+    {
+      "index": 25,
+      "b64": "GQ=="
+    },
+    {
+      "index": 26,
+      "b64": "Gg=="
+    },
+    {
+      "index": 27,
+      "b64": "Gw=="
+    },
+    {
+      "index": 28,
+      "b64": "HA=="
+    },
+    {
+      "index": 29,
+      "b64": "HQ=="
+    },
+    {
+      "index": 30,
+      "b64": "Hg=="
+    },
+    {
+      "index": 31,
+      "b64": "Hw=="
+    },
+    {
+      "index": 32,
+      "b64": "IA=="
+    },
+    {
+      "index": 33,
+      "b64": "IQ=="
+    },
+    {
+      "index": 34,
+      "b64": "Ig=="
+    },
+    {
+      "index": 35,
+      "b64": "Iw=="
+    },
+    {
+      "index": 36,
+      "b64": "JA=="
+    },
+    {
+      "index": 37,
+      "b64": "JQ=="
+    },
+    {
+      "index": 38,
+      "b64": "Jg=="
+    },
+    {
+      "index": 39,
+      "b64": "Jw=="
+    },
+    {
+      "index": 40,
+      "b64": "KA=="
+    },
+    {
+      "index": 41,
+      "b64": "KQ=="
+    },
+    {
+      "index": 42,
+      "b64": "Kg=="
+    },
+    {
+      "index": 43,
+      "b64": "Kw=="
+    },
+    {
+      "index": 44,
+      "b64": "LA=="
+    },
+    {
+      "index": 45,
+      "b64": "LQ=="
+    },
+    {
+      "index": 46,
+      "b64": "Lg=="
+    },
+    {
+      "index": 47,
+      "b64": "Lw=="
+    },
+    {
+      "index": 48,
+      "b64": "MA=="
+    },
+    {
+      "index": 49,
+      "b64": "MQ=="
+    },
+    {
+      "index": 50,
+      "b64": "Mg=="
+    },
+    {
+      "index": 51,
+      "b64": "Mw=="
+    },
+    {
+      "index": 52,
+      "b64": "NA=="
+    },
+    {
+      "index": 53,
+      "b64": "NQ=="
+    },
+    {
+      "index": 54,
+      "b64": "Ng=="
+    },
+    {
+      "index": 55,
+      "b64": "Nw=="
+    },
+    {
+      "index": 56,
+      "b64": "OA=="
+    },
+    {
+      "index": 57,
+      "b64": "OQ=="
+    },
+    {
+      "index": 58,
+      "b64": "Og=="
+    },
+    {
+      "index": 59,
+      "b64": "Ow=="
+    },
+    {
+      "index": 60,
+      "b64": "PA=="
+    },
+    {
+      "index": 61,
+      "b64": "PQ=="
+    },
+    {
+      "index": 62,
+      "b64": "Pg=="
+    },
+    {
+      "index": 63,
+      "b64": "Pw=="
+    },
+    {
+      "index": 64,
+      "b64": "QA=="
+    }
+  ],
+  "termination": {
+    "state": "early_close",
+    "after_chunk": 64,
+    "error": "BrokenPipeError"
+  },
+  "body_sha256": "4bfd2c8b6f1eec7a2afeb48b934ee4b2694182027e6d0fc075074f2fabb31781",
+  "expect": {
+    "useful_prefix_b64": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
+    "complete_events": null
+  }
+}
