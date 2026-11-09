@@ -54,7 +54,10 @@ def test_fixture_inventory_and_canonical_files() -> None:
 def test_format_tag_does_not_migrate_into_frozen_surface() -> None:
     exceptions = (".handoff/", "tests/", "README.md")
     for path in ROOT.rglob("*"):
-        if not path.is_file() or ".git" in path.parts or "vcr_core/partial" in path.as_posix():
+        skipped = {".git", ".venv", ".mypy_cache", ".ruff_cache", ".pytest_cache", "__pycache__"}
+        if not path.is_file() or skipped & set(path.relative_to(ROOT).parts):
+            continue
+        if "vcr_core/partial" in path.as_posix():
             continue
         relative = path.relative_to(ROOT).as_posix()
         if relative.startswith(exceptions):

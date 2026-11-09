@@ -550,3 +550,22 @@ def _get(url: str) -> str:
         assert isinstance(body, bytes)
         return body.decode("utf-8")
     raise AssertionError(f"GET {url} failed: {last_error}")
+
+
+@pytest.mark.parametrize("link_name", ["index.html", "pages"])
+def test_write_site_refuses_symlink_escape_and_writes_nothing(
+    tmp_path: Path, link_name: str
+) -> None:
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    target = outside / "keep.txt"
+    target.write_text("precious", encoding="utf-8")
+    out_dir = tmp_path / "site"
+    out_dir.mkdir()
+    (out_dir / link_name).symlink_to(target if link_name == "index.html" else outside)
+    cassettes = list(iter_fixtures())[:3]
+    with pytest.raises(ValueError, match="outside"):
+        write_site(cassettes, out_dir)
+    assert target.read_text(encoding="utf-8") == "precious"
+    assert sorted(p.name for p in outside.iterdir()) == ["keep.txt"]
+    assert sorted(p.name for p in out_dir.iterdir()) == [link_name]

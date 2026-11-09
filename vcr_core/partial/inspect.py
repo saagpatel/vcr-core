@@ -223,13 +223,15 @@ def write_site(cassettes: Sequence[PartialCassette], out_dir: Path) -> Path:
         items.append((href, cassette))
         pages.append((href, render_cassette(cassette)))
     root = out_dir.resolve()
-    for href, page in pages:
-        destination = _within(out_dir, root, href)
+    # Resolve and contain every destination, the index included, before writing anything,
+    # so a pre-existing symlink in the output directory can never redirect a write outside.
+    writes = [(_within(out_dir, root, href), page) for href, page in pages]
+    index_path = _within(out_dir, root, "index.html")
+    for destination, page in writes:
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_text(page, encoding="utf-8")
-    index_path = out_dir / "index.html"
     index_path.write_text(render_index(items), encoding="utf-8")
-    return index_path
+    return out_dir / "index.html"
 
 
 def _document(title: str, body: str) -> str:
