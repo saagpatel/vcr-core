@@ -12,7 +12,7 @@ Records. Keep changes small and preserve the frozen v0.1 schema contract.
 
 # Setup
 
-Install Python 3.15 and uv 0.13.0, then run `make setup`.
+Install Python 3.15 and uv 0.13.9 or any later 0.13.x, then run `make setup`.
 
 # Checks
 

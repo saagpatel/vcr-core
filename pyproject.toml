@@ -43,7 +43,7 @@ include = ["vcr_core/", "tests/", "scripts/", "README.md", "LICENSE", "pyproject
 testpaths = ["tests"]
 
 [tool.uv]
-required-version = "==0.13.0"
+required-version = ">=0.13.9,<0.14"
 
 [tool.ruff]
 target-version = "py312"

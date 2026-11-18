@@ -11,10 +11,8 @@ existing VCR v0.1 surface changes.
   `tests/test_distribution.py`. `import vcr_core` must not import `vcr_core.partial`.
 - Runtime is pure stdlib (Python >= 3.12). `jsonschema` may be used only in tests.
 - `make check` must pass (ruff check, ruff format --check, mypy --strict over vcr_core and tests,
-  pytest, build). uv is pinned to 0.13.0; if `uv` on PATH is another version, run the tools via
-  `.venv/bin/` (`.venv/bin/ruff`, `.venv/bin/mypy`, `.venv/bin/pytest`). Your worktree has no
-  `.venv` yet and network is off: create it with the pinned binary from the warm cache,
-  `/Users/d/.cache/uv/archive-v0/ROblRnaet5A6QO8-/bin/uv sync --locked --offline`.
+  pytest, build). uv must be 0.13.9 or any later 0.13.x (`required-version` in
+  `pyproject.toml`); then `make setup` creates `.venv` and `make check` runs everything.
 - Typing: `unknown`-style narrowing (`object` + isinstance) over `Any`; string `Literal` unions,
   no `enum`. Errors are raised, never swallowed.
 - All fixtures are original synthetic content. No real hosts, keys, names or emails

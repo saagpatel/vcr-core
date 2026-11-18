@@ -1,11 +1,11 @@
 .PHONY: setup check
 
 setup:
-	@command -v uv >/dev/null 2>&1 || { echo "Install uv 0.13.0 (https://docs.astral.sh/uv/)" >&2; exit 1; }
+	@command -v uv >/dev/null 2>&1 || { echo "Install uv 0.13.9 or any later 0.13.x (https://docs.astral.sh/uv/)" >&2; exit 1; }
 	uv sync --locked
 
 check:
-	@command -v uv >/dev/null 2>&1 || { echo "Install uv 0.13.0 (https://docs.astral.sh/uv/)" >&2; exit 1; }
+	@command -v uv >/dev/null 2>&1 || { echo "Install uv 0.13.9 or any later 0.13.x (https://docs.astral.sh/uv/)" >&2; exit 1; }
 	uv run --locked uv sync --locked --check
 	uv run --locked ruff check .
 	uv run --locked ruff format --check .
