@@ -28,9 +28,26 @@ gains `skill_bundle` and `mcp_server` for the agent-tooling attestation profile 
 on older validator copies simply cannot emit the new kinds until they upgrade; every existing
 record stays valid.
 
+## Build and test
+
+Prerequisites: `make`, Python 3.12 or newer, and **uv exactly 0.13.0**. The repo pins it
+(`required-version = "==0.13.0"` in `pyproject.toml`), so any other uv version, newer ones
+included, fails with `Required uv version ==0.13.0 does not match the running version`.
+If `uv --version` prints something else, install the pinned one into a throwaway venv, which
+leaves your global uv alone:
+
 ```bash
-make setup
-make check
+python3 -m venv "${TMPDIR:-/tmp}/uv-0.13.0" && "${TMPDIR:-/tmp}/uv-0.13.0/bin/pip" install uv==0.13.0
+export PATH="${TMPDIR:-/tmp}/uv-0.13.0/bin:$PATH"   # this shell only
+uv --version                                         # must print 0.13.0
+```
+
+Or follow the [uv install docs](https://docs.astral.sh/uv/) for 0.13.0 (CI uses that version).
+
+```bash
+make setup                  # uv sync --locked
+make check                  # lockfile check, ruff lint and format check, mypy, pytest, wheel build check
+uv run --locked pytest -q   # tests only
 ```
 
 ## Status
